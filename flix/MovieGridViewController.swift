@@ -1,28 +1,32 @@
 //
-//  MoviesViewController.swift
+//  MovieGridViewController.swift
 //  flix
 //
-//  Created by Junior Norabuena on 2/20/21.
+//  Created by Junior Norabuena on 2/25/21.
 //
 
 import UIKit
-import AlamofireImage
+import Alamofire
 
-class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class MovieGridViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     
     
-
-    @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var collectionView: UICollectionView!
     
     var movies = [[String:Any]]()
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        tableView.dataSource = self
-        tableView.delegate = self
-        // Do any additional setup after loading the view.
-        print("hello world")
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        
+        let layout = collectionView.collectionViewLayout as! UICollectionViewFlowLayout
+        
+        layout.minimumLineSpacing = 4
+        layout.minimumInteritemSpacing = 4
+        let width = (view.frame.size.width  - layout.minimumInteritemSpacing * 2) / 3
+        layout.itemSize = CGSize(width: width, height: width * 3 / 2)
         
         let url = URL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed")!
         let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
@@ -36,7 +40,9 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
             
         self.movies = dataDictionary["results"] as! [[String:Any]]
         
-        self.tableView.reloadData()
+        //self.tableView.reloadData()
+            self.collectionView.reloadData()
+            print(self.movies)
         
         print(dataDictionary)
               // TODO: Get the array of movies
@@ -46,48 +52,33 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
            }
         }
         task.resume()
-
     }
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return movies.count
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell") as! MovieCell
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MovieGridCell", for: indexPath) as! MovieGridCell
         
-        let movie = movies[indexPath.row]
-        let title = movie["title"] as! String
-        let synopsis = movie["overview"] as! String
-        
+        let movie = movies[indexPath.item]
         let posterPath = movie["poster_path"] as! String
         let baseUrl = "https://image.tmdb.org/t/p/w185"
         let posterUrl = URL(string: baseUrl + posterPath)
         
         cell.posterView.af.setImage(withURL: posterUrl!)
         
-        cell.titleLabel.text = title
-        cell.synopsisLabel.text = synopsis
-        
         return cell
     }
 
-
+    /*
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
-        print("loading up the details screen")
-        
-        let cell = sender as! UITableViewCell
-        let indexPath = tableView.indexPath(for: cell)!
-        let movie = movies[indexPath.row]
-        
-        let detailsViewController = segue.destination as! MovieDetailsViewController
-        detailsViewController.movie = movie
-        tableView.deselectRow(at: indexPath, animated: true)
     }
+    */
 
 }
